@@ -3,7 +3,38 @@ import matplotlib.pyplot as plt
 
 
 def sigmoid(z):
-    return 1/ (1 + np.exp(-z))
+    """Compute the sigmoid of z."""
+    return 1 / (1 + np.exp(-z))
+
+
+def plt_one_addpt_onclick(x, y, w, b, logistic=False):
+    """Plot data and model line and allow adding one point via mouse click."""
+    fig, ax = plt.subplots()
+
+    ax.scatter(x, y, marker="x", c="red", label="data")
+    x_model = np.linspace(x.min() - 0.5, x.max() + 0.5, 50)
+    if logistic:
+        y_model = sigmoid(np.dot(x_model, w) + b)
+        ax.set_ylim(-0.1, 1.1)
+    else:
+        y_model = np.dot(x_model, w) + b
+    ax.plot(x_model, y_model, color="blue", label="model")
+    ax.legend()
+
+    added_pt = []
+
+    def _onclick(event):
+        if event.inaxes != ax:
+            return
+        added_pt.append((event.xdata, event.ydata))
+        ax.scatter(event.xdata, event.ydata, color="green", marker="o", label="added")
+        fig.canvas.draw()
+        fig.canvas.mpl_disconnect(cid)
+
+    cid = fig.canvas.mpl_connect("button_press_event", _onclick)
+    plt.show()
+
+    return added_pt[0] if added_pt else None
 
 z_data = np.arange(-10, 11)
 y = sigmoid(z_data)
