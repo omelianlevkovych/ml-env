@@ -1,10 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Button
 
 
 def sigmoid(z):
     """Compute the sigmoid of z."""
     return 1 / (1 + np.exp(-z))
+
+
+def logistic_gradient(x, y, w, b):
+    """Compute gradient for 1-D logistic regression."""
+    m = x.shape[0]
+    dj_dw = 0.0
+    dj_db = 0.0
+    for i in range(m):
+        f_wb = sigmoid(w * x[i] + b)
+        err = f_wb - y[i]
+        dj_dw += err * x[i]
+        dj_db += err
+    dj_dw /= m
+    dj_db /= m
+    return dj_dw, dj_db
 
 
 def plt_one_addpt_onclick(x, y, w, b, logistic=False):
@@ -19,7 +35,7 @@ def plt_one_addpt_onclick(x, y, w, b, logistic=False):
         ax.set_ylim(-0.1, 1.1)
     else:
         y_model = np.dot(x_model, w) + b
-    ax.plot(x_model, y_model, color="blue", label="model")
+    line_model, = ax.plot(x_model, y_model, color="blue", label="model")
     ax.legend()
 
     added_pt = []
@@ -33,6 +49,26 @@ def plt_one_addpt_onclick(x, y, w, b, logistic=False):
         fig.canvas.mpl_disconnect(cid)
 
     cid = fig.canvas.mpl_connect("button_press_event", _onclick)
+
+    if logistic:
+        plt.subplots_adjust(bottom=0.2)
+        ax_run = plt.axes([0.7, 0.05, 0.25, 0.075])
+        btn = Button(ax_run, 'Run Logistic Regression')
+
+        def _on_run(event):
+            nonlocal w, b
+            iterations = 20
+            alpha = 0.1
+            for _ in range(iterations):
+                dj_dw, dj_db = logistic_gradient(x, y, w, b)
+                w -= alpha * dj_dw
+                b -= alpha * dj_db
+                line_model.set_ydata(sigmoid(w * x_model + b))
+                fig.canvas.draw()
+                plt.pause(0.1)
+
+        btn.on_clicked(_on_run)
+
     plt.show()
 
     return added_pt[0] if added_pt else None
