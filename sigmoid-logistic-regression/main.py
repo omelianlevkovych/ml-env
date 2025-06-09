@@ -14,7 +14,8 @@ def plt_one_addpt_onclick(x, y, w, b, logistic=False):
     ax.scatter(x, y, marker="x", c="red", label="data")
     x_model = np.linspace(x.min() - 0.5, x.max() + 0.5, 50)
     if logistic:
-        y_model = sigmoid(np.dot(x_model, w) + b)
+        # w may be a one-element array; use elementwise multiplication
+        y_model = sigmoid(w * x_model + b)
         ax.set_ylim(-0.1, 1.1)
     else:
         y_model = np.dot(x_model, w) + b
