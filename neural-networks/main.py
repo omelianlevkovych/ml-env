@@ -8,6 +8,11 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import logging
 logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
+import tensorflow as tf
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+
 def load_data():
     """
     Load handwritten digits dataset (0 and 1 only)
@@ -43,7 +48,6 @@ def main():
     print('\nDisplaying sample digits:')
     plot_sample_digits(X, y, n_samples=3)
 
-    # You do not need to modify anything in this cell
     m, n = X.shape
 
     fig, axes = plt.subplots(8,8, figsize=(8,8))
@@ -65,6 +69,18 @@ def main():
         ax.set_axis_off()
     
     plt.show()
+
+    model = Sequential(
+        [               
+            keras.Input(shape=(400,)),    #specify input size
+            Dense(25, activation='sigmoid'),
+            Dense(15, activation='sigmoid'),
+            Dense(1, activation='sigmoid')
+        ], name = "my_model" 
+    )                            
+
+    model.summary()
+
 
 if __name__ == "__main__":
     main()
