@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_digits
 from autils import plot_digit, plot_sample_digits
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import logging
 logging.getLogger("tensorflow").setLevel(logging.ERROR)
@@ -40,6 +42,29 @@ def main():
     
     print('\nDisplaying sample digits:')
     plot_sample_digits(X, y, n_samples=3)
+
+    # You do not need to modify anything in this cell
+    m, n = X.shape
+
+    fig, axes = plt.subplots(8,8, figsize=(8,8))
+    fig.tight_layout(pad=0.1)
+
+    for i,ax in enumerate(axes.flat):
+        # Select random indices
+        random_index = np.random.randint(m)
+        
+        # Select rows corresponding to the random indices and
+        # reshape the image
+        X_random_reshaped = X[random_index].reshape((8,8)).T
+        
+        # Display the image
+        ax.imshow(X_random_reshaped, cmap='gray')
+        
+        # Display the label above the image
+        ax.set_title(y[random_index])
+        ax.set_axis_off()
+    
+    plt.show()
 
 if __name__ == "__main__":
     main()
