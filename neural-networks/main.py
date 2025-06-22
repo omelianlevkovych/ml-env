@@ -72,7 +72,7 @@ def main():
 
     model = Sequential(
         [               
-            keras.Input(shape=(400,)),    #specify input size
+            keras.Input(shape=(64,)),    #specify input size - 8x8 = 64 features
             Dense(25, activation='sigmoid'),
             Dense(15, activation='sigmoid'),
             Dense(1, activation='sigmoid')
@@ -81,6 +81,37 @@ def main():
 
     model.summary()
 
+    model.compile(
+        loss=keras.losses.BinaryCrossentropy(),
+        optimizer='adam',
+    )
+
+    model.fit(
+        X, y,
+        epochs=20
+    )
+
+    # Predict for the first zero
+    zero_indices = np.where(y == 0)[0]
+    if len(zero_indices) > 0:
+        idx_zero = zero_indices[0]
+        prediction_zero = model.predict(X[idx_zero].reshape(1, 64))
+        print(f" predicting a zero: {prediction_zero}")
+        yhat_zero = 1 if prediction_zero >= 0.5 else 0
+        print(f"prediction after threshold (zero): {yhat_zero}")
+    else:
+        print("No samples with label 0 found.")
+
+    # Predict for the first one
+    one_indices = np.where(y == 1)[0]
+    if len(one_indices) > 0:
+        idx_one = one_indices[0]
+        prediction_one = model.predict(X[idx_one].reshape(1, 64))
+        print(f" predicting a one:  {prediction_one}")
+        yhat_one = 1 if prediction_one >= 0.5 else 0
+        print(f"prediction after threshold (one): {yhat_one}")
+    else:
+        print("No samples with label 1 found.")
 
 if __name__ == "__main__":
     main()
