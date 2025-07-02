@@ -166,3 +166,20 @@ for degree in range(1,11):
 # Plot the results
 degrees = range(1, 11)
 utils.plot_train_cv_mses(degrees, train_mses, cv_mses, title="Degree of polynomial vs. train and CV MSEs")
+
+# Choosing the best model
+degree = np.argmin(cv_mses) + 1
+print(f"Lowest CV MSE is found in the model with degree={degree}")
+
+X_test_mapped = polys[degree-1].transform(x_test)
+
+# Scale the test set
+X_test_mapped_scaled = scalers[degree-1].transform(X_test_mapped)
+
+# Compute the test MSE
+yhat = models[degree-1].predict(X_test_mapped_scaled)
+test_mse = mean_squared_error(y_test, yhat) / 2
+
+print(f"Training MSE: {train_mses[degree-1]:.2f}")
+print(f"Cross Validation MSE: {cv_mses[degree-1]:.2f}")
+print(f"Test MSE: {test_mse:.2f}")
