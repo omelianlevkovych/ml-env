@@ -1,17 +1,28 @@
-# Linear Regression with California Housing Dataset
+# Machine Learning Model Comparison: Polynomial Regression vs Neural Networks
 
-This project provides a foundation for practicing linear regression using the California Housing dataset. The codebase includes data loading, preprocessing, visualization utilities, and train/validation/test splitting.
+This project demonstrates **multiple machine learning approaches** for regression using the California Housing dataset. The implementation includes polynomial regression with cross-validation model selection and neural network architectures comparison, showcasing different approaches to the same regression problem.
+
+## 🎯 Project Overview
+
+This machine learning project showcases:
+- **Polynomial Regression**: Feature engineering and systematic model selection via cross-validation
+- **Neural Network Models**: Three different architectures with varying complexity
+- **Model Comparison**: Direct performance comparison between traditional ML and deep learning
+- **Proper ML Pipeline**: Train/validation/test splits with standardization
+- **Performance Evaluation**: MSE comparison across different model types and complexities
+- **Bias-Variance Trade-off**: Visualizing overfitting vs underfitting in both approaches
 
 ## 📁 Project Structure
 
 ```
 tf-evals-and-selection/
-├── main.py                    # Main script - data loading and visualization
-├── utils.py                   # Plotting and utility functions for regression analysis
+├── main.py                    # Polynomial regression pipeline with model selection
+├── neural-network.py          # Neural network models with TensorFlow/Keras
+├── utils.py                   # MSE plotting utilities
 ├── requirements.txt           # Python dependencies
 ├── data/                      # Data directory
-│   ├── data_w3_ex1.csv       # Synthetic dataset (100 samples, 2 features)
-│   └── california_housing.csv # California housing dataset (20,640 samples)
+│   ├── california_housing.csv # California housing dataset
+│   └── data_w3_ex1.csv       # Additional dataset
 └── README.md                  # This file
 ```
 
@@ -19,53 +30,95 @@ tf-evals-and-selection/
 
 ### 1. Install Dependencies
 
-First, install the required Python packages:
-
 ```bash
 pip install -r requirements.txt
 ```
 
-The dependencies are:
+**Dependencies:**
 - `numpy>=1.21.0` - Numerical operations
-- `matplotlib>=3.5.0` - Plotting and visualization
-- `scikit-learn>=1.0.0` - Machine learning datasets and utilities
-- `pandas>=1.3.0` - Data manipulation (optional)
+- `matplotlib>=3.5.0` - Plotting and visualization  
+- `scikit-learn>=1.0.0` - ML algorithms and datasets
+- `pandas>=1.3.0` - Data manipulation
+- `tensorflow>=2.8.0` - Deep learning framework
+- `keras>=2.8.0` - High-level neural network API
 
-### 2. Run the Data Loading Script
+### 2. Run the Implementations
 
+**Polynomial Regression Pipeline:**
 ```bash
 python main.py
 ```
 
-This will:
-- Load the California housing dataset from scikit-learn
-- Use the median income feature (MedInc) as the single input feature
-- Split the data into training (60%), cross-validation (20%), and test (20%) sets
-- Display the data shapes and create visualizations showing the complete dataset and the train/cv/test split
+**Neural Network Models:**
+```bash
+python neural-network.py
+```
 
-## 📊 Current Implementation
+## 🔬 Implementation Details
 
-### Main Script (`main.py`)
+### Data Preparation (Both Approaches)
+- **Dataset**: California Housing (20,640 samples)
+- **Feature**: Median Income (MedInc) - single feature for clear visualization
+- **Target**: House values in $100k units
+- **Split**: 60% train / 20% validation / 20% test
 
-The main script demonstrates:
+## 📊 Approach 1: Polynomial Regression (`main.py`)
 
-1. **Data Loading**: Fetches the California housing dataset using scikit-learn
-2. **Feature Selection**: Uses only the 'MedInc' (median income) feature as it's highly correlated with house prices
-3. **Data Preprocessing**: Reshapes 1D arrays to 2D for compatibility with sklearn
-4. **Train/CV/Test Split**: Splits data into 60%/20%/20% for training, cross-validation, and testing
-5. **Visualization**: Creates side-by-side plots showing:
-   - Complete dataset scatter plot
-   - Train/CV/Test split with different colors for each set
+### Machine Learning Pipeline
 
-### Expected Output
+1. **Data Loading & Splitting**
+   ```python
+   # Load California housing dataset
+   housing = fetch_california_housing()
+   x = housing.data[:, 0]  # MedInc feature only
+   y = housing.target
+   
+   # 60/20/20 split
+   x_train, x_cv, x_test, y_train, y_cv, y_test
+   ```
 
-When you run `python main.py`, you'll see:
+2. **Feature Scaling**
+   ```python
+   # Standardize features (mean=0, std=1)
+   scaler = StandardScaler()
+   X_train_scaled = scaler.fit_transform(x_train)
+   ```
+
+3. **Polynomial Feature Engineering**
+   ```python
+   # Create polynomial features up to degree 10
+   poly = PolynomialFeatures(degree=degree, include_bias=False)
+   X_train_mapped = poly.fit_transform(x_train)
+   ```
+
+4. **Model Training & Evaluation**
+   ```python
+   # Train linear regression on polynomial features
+   model = LinearRegression()
+   model.fit(X_train_mapped_scaled, y_train)
+   
+   # Evaluate on train and validation sets
+   train_mse = mean_squared_error(y_train, yhat) / 2
+   cv_mse = mean_squared_error(y_cv, yhat) / 2
+   ```
+
+5. **Model Selection**
+   ```python
+   # Choose degree with lowest validation MSE
+   best_degree = np.argmin(cv_mses) + 1
+   
+   # Final evaluation on test set
+   test_mse = mean_squared_error(y_test, yhat) / 2
+   ```
+
+### Expected Output (Polynomial Regression)
 
 ```
 Loading California housing dataset...
 the shape of the inputs x is: (20640, 1)
 the shape of the targets y is: (20640, 1)
 Feature used: MedInc (Median Income)
+
 the shape of the training set (input) is: (12384, 1)
 the shape of the training set (target) is: (12384, 1)
 
@@ -78,136 +131,205 @@ the shape of the test set (target) is: (4128, 1)
 ✅ Data loaded and split successfully!
 📊 Feature: MedInc (Median Income)
 🎯 Ready for linear regression experiments!
+
+training MSE (using sklearn function): [value]
+training MSE (for-loop implementation): [value]
+Cross validation MSE: [value]
+
+Lowest CV MSE is found in the model with degree=[X]
+Training MSE: [value]
+Cross Validation MSE: [value]  
+Test MSE: [value]
+```
+
+## 🧠 Approach 2: Neural Networks (`neural-network.py`)
+
+### Neural Network Architectures
+
+The implementation compares three different neural network architectures:
+
+1. **Model 1 (Simple)**: 
+   - Input → Dense(25, ReLU) → Dense(15, ReLU) → Dense(1, Linear)
+   - 2 hidden layers, moderate complexity
+
+2. **Model 2 (Deep)**: 
+   - Input → Dense(20, ReLU) → Dense(12, ReLU) → Dense(12, ReLU) → Dense(20, ReLU) → Dense(1, Linear)
+   - 4 hidden layers, deeper architecture
+
+3. **Model 3 (Complex)**: 
+   - Input → Dense(32, ReLU) → Dense(16, ReLU) → Dense(8, ReLU) → Dense(4, ReLU) → Dense(12, ReLU) → Dense(1, Linear)
+   - 5 hidden layers, varying widths
+
+### Neural Network Pipeline
+
+1. **Data Preprocessing**
+   ```python
+   # Apply polynomial features (degree=1, so just scaling)
+   poly = PolynomialFeatures(degree=1, include_bias=False)
+   X_train_mapped = poly.fit_transform(x_train)
+   
+   # Standardize features
+   scaler = StandardScaler()
+   X_train_mapped_scaled = scaler.fit_transform(X_train_mapped)
+   ```
+
+2. **Model Creation**
+   ```python
+   def build_models():
+       # Define three different architectures
+       model1 = keras.Sequential([...])  # Simple
+       model2 = keras.Sequential([...])  # Deep  
+       model3 = keras.Sequential([...])  # Complex
+       return models
+   ```
+
+3. **Training & Evaluation**
+   ```python
+   # Compile with MSE loss and Adam optimizer
+   model.compile(loss='mse', optimizer=keras.optimizers.Adam(learning_rate=0.1))
+   
+   # Train for 300 epochs
+   model.fit(X_train_mapped_scaled, y_train, epochs=300, verbose=0)
+   
+   # Evaluate on train and validation sets
+   train_mse = mean_squared_error(y_train, yhat) / 2
+   cv_mse = mean_squared_error(y_cv, yhat) / 2
+   ```
+
+### Expected Output (Neural Networks)
+
+```
+Loading California housing dataset...
+✅ Data loaded and split successfully!
+📊 Feature: MedInc (Median Income)
+🎯 Ready for linear regression experiments!
+
+Training Model_1...
+Done!
+
+Training Model_2...
+Done!
+
+Training Model_3...
+Done!
+
+RESULTS:
+Model 1: Training MSE: [value], CV MSE: [value]
+Model 2: Training MSE: [value], CV MSE: [value]
+Model 3: Training MSE: [value], CV MSE: [value]
 ```
 
 ## 🛠 Utility Functions (`utils.py`)
 
-The utility module provides comprehensive plotting functions for regression analysis:
-
-### Basic Dataset Plotting
+### MSE Plotting
 ```python
 import utils
 
-# Plot any dataset
-utils.plot_dataset(x, y, title="Your Dataset", xlabel="Input", ylabel="Target")
+# Plot training and validation MSEs vs polynomial degrees
+utils.plot_train_cv_mses(degrees, train_mses, cv_mses, 
+                        title="Degree of polynomial vs. train and CV MSEs")
 ```
 
-### Comprehensive Regression Results
+**Function**: `plot_train_cv_mses()`
+- **Purpose**: Visualize bias-variance trade-off
+- **Inputs**: Polynomial degrees, training MSEs, validation MSEs, optional title
+- **Output**: Line plot showing both MSE curves for model selection
+- **Features**: Formatted with markers, colors, grid, and legend
+
+## 📊 Key Machine Learning Concepts Demonstrated
+
+### 1. **Polynomial Regression vs Neural Networks**
+- **Polynomial**: Explicit feature engineering with linear models
+- **Neural Networks**: Automatic feature learning through hidden layers
+- **Comparison**: Traditional ML vs Deep Learning approaches
+
+### 2. **Model Selection Strategies**
+- **Polynomial**: Cross-validation across different polynomial degrees
+- **Neural Networks**: Architecture comparison (depth vs width)
+- **Both**: Systematic evaluation using train/validation/test methodology
+
+### 3. **Feature Scaling**
+- Standardizes features before model training
+- Critical for both polynomial regression and neural networks
+- Ensures numerical stability and fair comparison
+
+### 4. **Architecture Exploration (Neural Networks)**
+- **Model 1**: Baseline architecture with moderate complexity
+- **Model 2**: Deeper network testing depth hypothesis
+- **Model 3**: Complex architecture with varying layer widths
+
+### 5. **Proper ML Evaluation**
+- Train set: Model fitting
+- Validation set: Hyperparameter tuning and model selection
+- Test set: Final unbiased performance estimate
+
+## 🎯 Learning Outcomes
+
+After running both implementations, you'll understand:
+
+✅ **Polynomial Regression Concepts:**
+- Polynomial feature engineering and its effects
+- Cross-validation for model selection
+- Bias-variance trade-off visualization
+- Linear regression with engineered features
+
+✅ **Neural Network Concepts:**
+- Different neural network architectures
+- Deep learning with TensorFlow/Keras
+- Architecture complexity vs performance
+- Automatic feature learning
+
+✅ **Model Comparison:**
+- Traditional ML vs Deep Learning approaches
+- When to use polynomial regression vs neural networks
+- Performance trade-offs between approaches
+- Complexity vs interpretability
+
+✅ **Practical Skills:**
+- Complete scikit-learn ML workflow
+- TensorFlow/Keras neural network implementation
+- Systematic model evaluation and comparison
+- Professional ML pipeline development
+
+## 🚀 Extensions and Experiments
+
+### Try Different Features
 ```python
-# Plot training data, regression line, test predictions, and residuals
-utils.plot_regression_results(x_train, y_train, x_test, y_test, y_train_pred, y_test_pred, model)
+# Experiment with other housing features
+feature_index = 1  # HouseAge
+feature_index = 2  # AveRooms
+# Or combine multiple features for both approaches
 ```
 
-### Prediction vs Actual Comparison
+### Regularization
 ```python
-# Compare predicted vs actual values
-utils.plot_prediction_vs_actual(y_true, y_pred, title="Model Performance")
+# Polynomial Regression
+from sklearn.linear_model import Ridge, Lasso
+
+# Neural Networks  
+model.add(keras.layers.Dropout(0.2))  # Dropout
+# Or L1/L2 regularization in layer definitions
 ```
 
-### Feature Importance (for multiple features)
+### Architecture Variations
 ```python
-# Visualize feature importance in multiple regression
-utils.plot_feature_importance(feature_names, coefficients, title="Feature Importance")
+# Try different neural network configurations
+model = keras.Sequential([
+    keras.layers.Dense(64, activation='relu'),
+    keras.layers.Dropout(0.3),
+    keras.layers.Dense(32, activation='relu'),
+    keras.layers.Dense(1, activation='linear')
+])
 ```
 
-### Dataset Information
+### Advanced Comparisons
 ```python
-# Print comprehensive dataset statistics
-utils.print_dataset_info(x, y, feature_names=["MedInc"])
+# Compare more polynomial degrees
+for degree in range(1, 15):
+
+# Try different optimizers for neural networks
+keras.optimizers.SGD(learning_rate=0.01)
+keras.optimizers.RMSprop(learning_rate=0.001)
 ```
 
-## 📈 Available Datasets
-
-### 1. California Housing Dataset (`california_housing.csv`)
-- **Size**: 20,640 samples
-- **Features**: 8 features available (currently using 1: MedInc)
-- **Target**: Median house value (in $100k)
-- **Source**: Real-world data from sklearn
-- **Current Usage**: Single feature regression with median income
-
-### 2. Synthetic Dataset (`data_w3_ex1.csv`)
-- **Size**: 100 samples
-- **Features**: Simple 2-column format
-- **Usage**: Available for simple experiments
-
-### California Housing Features Available:
-- `MedInc`: Median income in block group (currently used)
-- `HouseAge`: Median house age in block group  
-- `AveRooms`: Average number of rooms per household
-- `AveBedrms`: Average number of bedrooms per household
-- `Population`: Block group population
-- `AveOccup`: Average number of household members
-- `Latitude`: Block group latitude
-- `Longitude`: Block group longitude
-
-## 🔧 Next Steps - Extend the Implementation
-
-The current codebase provides the foundation. Here are natural next steps:
-
-### 1. Add Linear Regression Model
-```python
-from sklearn.linear_model import LinearRegression
-
-# Train a model
-model = LinearRegression()
-model.fit(x_train, y_train)
-
-# Make predictions
-y_train_pred = model.predict(x_train)
-y_test_pred = model.predict(x_test)
-
-# Use utils for visualization
-utils.plot_regression_results(x_train, y_train, x_test, y_test, y_train_pred, y_test_pred, model)
-```
-
-### 2. Add Model Evaluation
-```python
-from sklearn.metrics import mean_squared_error, r2_score
-
-# Calculate metrics
-train_mse = mean_squared_error(y_train, y_train_pred)
-test_mse = mean_squared_error(y_test, y_test_pred)
-train_r2 = r2_score(y_train, y_train_pred)
-test_r2 = r2_score(y_test, y_test_pred)
-```
-
-### 3. Experiment with Multiple Features
-```python
-# Use multiple features instead of just MedInc
-x_multi = housing.data[:, [0, 1, 2]]  # MedInc, HouseAge, AveRooms
-```
-
-### 4. Add Polynomial Features
-```python
-from sklearn.preprocessing import PolynomialFeatures
-
-poly = PolynomialFeatures(degree=2)
-x_poly = poly.fit_transform(x)
-```
-
-## 🎯 Current Capabilities
-
-✅ **Implemented:**
-- Data loading and preprocessing
-- Train/validation/test splitting
-- Comprehensive visualization utilities
-- Dataset information and statistics
-- Professional plotting functions for regression analysis
-
-🔄 **Ready to Add:**
-- Linear regression model training
-- Model evaluation metrics
-- Cross-validation analysis
-- Multiple feature regression
-- Polynomial regression
-- Regularization techniques
-
-## 💡 Usage Tips
-
-1. **Start with the current implementation** to understand data structure
-2. **Use the utility functions** for consistent, professional visualizations
-3. **The data is already preprocessed** and ready for model training
-4. **Cross-validation set is prepared** for hyperparameter tuning
-5. **All plotting functions are ready** for regression analysis
-
-The foundation is solid - you can focus on implementing and experimenting with different regression techniques! 🚀 
+This project provides comprehensive coverage of both traditional machine learning (polynomial regression) and modern deep learning approaches (neural networks) for regression problems, demonstrating the evolution and trade-offs in machine learning methodologies. 
