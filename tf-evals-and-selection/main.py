@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_california_housing
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
 # Load the California housing dataset
@@ -65,3 +66,38 @@ plt.show()
 print("\n✅ Data loaded and split successfully!")
 print(f"📊 Feature: MedInc (Median Income)")
 print(f"🎯 Ready for linear regression experiments!")
+
+from sklearn.preprocessing import StandardScaler
+scaler_linear = StandardScaler()
+
+# Compute the mean and standard deviation of the training set then transform it
+X_train_scaled = scaler_linear.fit_transform(x_train)
+
+
+# Train the model
+from sklearn.linear_model import LinearRegression
+linear_model = LinearRegression()
+linear_model.fit(X_train_scaled, y_train)
+
+# Eval the model
+yhat = linear_model.predict(X_train_scaled)
+# Use scikit-learn's utility function and divide by 2
+print(f"training MSE (using sklearn function): {mean_squared_error(y_train, yhat) / 2}")
+
+total_squared_error = 0
+
+for i in range(len(yhat)):
+    squared_error_i  = (yhat[i] - y_train[i])**2
+    total_squared_error += squared_error_i                                              
+
+mse = total_squared_error / (2*len(yhat))
+print(f"training MSE (for-loop implementation): {mse}")
+
+# Scale the cross validation set using the mean and standard deviation of the training set
+X_cv_scaled = scaler_linear.transform(x_cv)
+
+# Feed the scaled cross validation set
+yhat = linear_model.predict(X_cv_scaled)
+
+# Use scikit-learn's utility function and divide by 2
+print(f"Cross validation MSE: {mean_squared_error(y_cv, yhat) / 2}")
