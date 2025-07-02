@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_california_housing
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
+import utils
 
 # Load the California housing dataset
 print("Loading California housing dataset...")
@@ -67,7 +68,7 @@ print("\n✅ Data loaded and split successfully!")
 print(f"📊 Feature: MedInc (Median Income)")
 print(f"🎯 Ready for linear regression experiments!")
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 scaler_linear = StandardScaler()
 
 # Compute the mean and standard deviation of the training set then transform it
@@ -101,3 +102,67 @@ yhat = linear_model.predict(X_cv_scaled)
 
 # Use scikit-learn's utility function and divide by 2
 print(f"Cross validation MSE: {mean_squared_error(y_cv, yhat) / 2}")
+
+
+# Add polynomial features
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_train_mapped = poly.fit_transform(X_train_scaled)
+print(X_train_mapped[:5])
+
+sclaer_poly = StandardScaler()
+X_train_mapped_scaled = sclaer_poly.fit_transform(X_train_mapped)
+print(X_train_mapped_scaled[:5])
+
+model = LinearRegression()
+model.fit(X_train_mapped_scaled, y_train)
+yhat = model.predict(X_train_mapped_scaled)
+print(f"Training MSE: {mean_squared_error(y_train, yhat) / 2}")
+
+X_cv_mapped = poly.transform(x_cv)
+X_cv_mapped_scaled = sclaer_poly.transform(X_cv_mapped)
+
+yhat = model.predict(X_cv_mapped_scaled)
+print(f"Cross validation MSE: {mean_squared_error(y_cv, yhat) / 2}")
+
+# We can have a loop and try different degrees
+train_mses = []
+cv_mses = []
+models = []
+polys = []
+scalers = []
+
+# Loop over 10 times. Each adding one more degree of polynomial higher than the last.
+for degree in range(1,11):
+    
+    # Add polynomial features to the training set
+    poly = PolynomialFeatures(degree, include_bias=False)
+    X_train_mapped = poly.fit_transform(x_train)
+    polys.append(poly)
+    
+    # Scale the training set
+    scaler_poly = StandardScaler()
+    X_train_mapped_scaled = scaler_poly.fit_transform(X_train_mapped)
+    scalers.append(scaler_poly)
+    
+    # Create and train the model
+    model = LinearRegression()
+    model.fit(X_train_mapped_scaled, y_train )
+    models.append(model)
+    
+    # Compute the training MSE
+    yhat = model.predict(X_train_mapped_scaled)
+    train_mse = mean_squared_error(y_train, yhat) / 2
+    train_mses.append(train_mse)
+    
+    # Add polynomial features and scale the cross validation set
+    X_cv_mapped = poly.transform(x_cv)
+    X_cv_mapped_scaled = scaler_poly.transform(X_cv_mapped)
+    
+    # Compute the cross validation MSE
+    yhat = model.predict(X_cv_mapped_scaled)
+    cv_mse = mean_squared_error(y_cv, yhat) / 2
+    cv_mses.append(cv_mse)
+    
+# Plot the results
+degrees = range(1, 11)
+utils.plot_train_cv_mses(degrees, train_mses, cv_mses, title="Degree of polynomial vs. train and CV MSEs")
